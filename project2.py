@@ -14,9 +14,8 @@ from tika import parser
 
 def main(APIkey, engineID, r, t, Q, k):
     X = defaultdict(float) #key is tuple, value is confidence value, this will help with duplicates and update
-    relationdict = {'1':"per:schools_attended",'2':"per:employee_or_member_of",'3':"per:cities_of_residence",'4':"org:top_members_employees"}
 
-    while len(X) < k:
+    while len(X) < int(k):
         X = step3(APIkey, engineID, r, t, Q, k)
 
         # sort X in decreasing intervals of extraction confidence
@@ -42,16 +41,18 @@ def main(APIkey, engineID, r, t, Q, k):
 
     # The above loop ends when X contains at least k tuples
 
-    if len(X) >= k:
+    if len(X) >= int(k):
         # step 5: return the tuples with their extraction confidence
-    else:
         for key, value in sorted_X:
             print (key, value)
             print("DONE WITH ALL")
+    else:
+        print("NO RESULTS FOUND AT THE END")
     
 
 def step3(APIkey, engineID, r, t, Q, k):
     # now begin searching query
+    relationdict = {'1':"per:schools_attended",'2':"per:employee_or_member_of",'3':"per:cities_of_residence",'4':"org:top_members_employees"}
     service = build("customsearch", "v1", developerKey=APIkey)
     res = service.cse().list(q=Q, cx=engineID, num=5).execute()
     X = process_urls(res,relationdict,r,t)
@@ -60,7 +61,7 @@ def step3(APIkey, engineID, r, t, Q, k):
     return(X)
 
 def process_urls(res,relationdict,r,t):
-    name_dict = {'1'😞"ORGANIZATION","PERSON"],'2'😞"ORGANIZATION","PERSON"],'3'😞"LOCATION","CITY","STATE_OR_PROVINCE","COUNTRY"],'4'😞"ORGANIZATION","PERSON"]}
+    name_dict = {'1':["ORGANIZATION","PERSON"],'2':["ORGANIZATION","PERSON"],'3':["LOCATION","CITY","STATE_OR_PROVINCE","COUNTRY"],'4':["ORGANIZATION","PERSON"]}
     X = defaultdict(float)
     count = 1
     for results in res['items']:
