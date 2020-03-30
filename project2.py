@@ -113,39 +113,39 @@ def process_urls(res,relationdict,r,t):
     name_dict = {'1':["ORGANIZATION","PERSON"],'2':["ORGANIZATION","PERSON"],'3':["LOCATION","CITY","STATE_OR_PROVINCE","COUNTRY"],'4':["ORGANIZATION","PERSON"]}
     X = defaultdict(float)
     count = 1
-    for results in res['items']:
-        url = results['link']
-        title = results['title']
-        print("URL (",count,"/ 10):", url)
-        print("\tFetching text from url ...")
+    with CoreNLPClient(annotators=['tokenize', 'ssplit', 'pos', 'lemma', 'ner'], timeout=30000, memory='4G',
+                       endpoint="http://localhost:9000") as pipeline_ner:
+        with CoreNLPClient(annotators=['tokenize', 'ssplit', 'pos', 'lemma', 'ner', 'depparse', 'coref', 'kbp'],
+                           timeout=30000, memory='4G', endpoint="http://localhost:9001") as pipeline_kbp:
+            for results in res['items']:
+                url = results['link']
+                title = results['title']
+                print("URL (", count, "/ 10):", url)
+                print("\tFetching text from url ...")
 
-        ## gary please fill in
-        webpage_length = 0
+                ## gary please fill in
+                webpage_length = 0
 
-        #print('result ' + str(count))
-        #print('title: '+title)
-        #print('url: '+url)
-        count += 1
-        #now get contents using tika
-        try:
-            parsed = parser.from_file(url)
-        except:
-            continue
-        content = parsed["content"]
-        strip_content = ' '.join(content.split())
-        print(len(strip_content))
-        #get first 20000 characters
-        if len(strip_content) >= 20000:
-            strip_content = strip_content[:20000]
-        print("\tWebpage length (num characters):", len(strip_content))
-        print("\tAnnotating the webpage using [tokenize, ssplit, pos, lemma, ner] annotators ...")
-        #use package now
+                # print('result ' + str(count))
+                # print('title: '+title)
+                # print('url: '+url)
+                count += 1
+                # now get contents using tika
+                try:
+                    parsed = parser.from_file(url)
+                except:
+                    continue
+                content = parsed["content"]
+                strip_content = ' '.join(content.split())
+                print(len(strip_content))
+                # get first 20000 characters
+                if len(strip_content) >= 20000:
+                    strip_content = strip_content[:20000]
+                print("\tWebpage length (num characters):", len(strip_content))
+                print("\tAnnotating the webpage using [tokenize, ssplit, pos, lemma, ner] annotators ...")
+                # use package now
 
-        with CoreNLPClient(annotators=['tokenize', 'ssplit', 'pos', 'lemma', 'ner'], timeout=30000, memory='4G',
-                           endpoint="http://localhost:9000") as pipeline_ner:
-            with CoreNLPClient(annotators=['tokenize', 'ssplit', 'pos', 'lemma', 'ner', 'depparse', 'coref', 'kbp'],
-                               timeout=30000, memory='4G', endpoint="http://localhost:9001") as pipeline_kbp:
-            # for j in range(10): # this number can be changed back to 10 if needed
+                # for j in range(10): # this number can be changed back to 10 if needed
             #     try:
                     #print(f">>> Repeating {j}th time.")
                 ann_ner = pipeline_ner.annotate(strip_content)
@@ -159,12 +159,12 @@ def process_urls(res,relationdict,r,t):
                             if token.ner == name_dict[r][i]:
                                 match[i] = True
                     if all(match):
-                        countkbp += 1
                         try:
                             ann = pipeline_kbp.annotate(to_text(sentence))
                         except:
                             continue
                         countsentences = 0
+                        countkbp += 1
                         for i in ann.sentence:
                             if (countsentences % 5 == 0) and (countsentences != 0):
                                 print("\tProcessed", countsentences+1,"/", len(ann_ner.sentence),"sentences")
