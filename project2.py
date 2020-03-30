@@ -12,47 +12,16 @@ import tika
 from tika import parser
 from decimal import *
 
-fakeX = {
-    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Cascade Investment Technology'): 0.9484856396848951, 
-    ('Melinda French', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.8882812681198851, 
-    ('William Henry Gates III', 'per:employee_or_member_of', 'Branded Entertainment Network'): 0.910425809655642, 
-    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Microsoft'): 0.9535132816229053, 
-    ('William Henry Gates III', 'per:employee_or_member_of', 'Microsoft'): 0.9605363777239155, 
-    ('Bill Gates Gates', 'per:employee_or_memberof', 'Cascade Investment Technology'): 0.7307587220750844, 
-    ('Melinda French', 'per:employeeor_member_of', 'Branded Entertainment Network'): 0.8205988757633852, 
-    ('Bill Gates Gates', 'per:employee_or_member_of', 'Branded Entertainment Network'): 0.8528370731813597, 
-    ('William Henry Gates III', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.964341523275631, 
-    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.9596297625973506, 
-    ('Melinda French', 'per:employee_or_member_of', 'Cascade Investment Technology'): 0.9331336130042003, 
-    ('Bill Gates Gates', 'per:employee_or_member_of', 'Microsoft'): 0.9789945486751996, 
-    ('Bill Gates Gates', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.9592873304873829, 
-    ('Melinda French', 'per:employee_or_member_of', 'Microsoft'): 0.9561346424552023, 
-    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Branded Entertainment Network'): 0.8958521246315242, 
-    ('Paul Allen', 'per:employee_or_member_of', 'Microsoft'): 0.7123580527943317, 
-    ('Gates', 'per:employee_or_member_of', 'Microsoft'): 1.0, 
-    ('He', 'per:employee_or_member_of', 'Microsoft'): 1.0, 
-    ('Gates', 'per:employee_or_member_of', 'Harvard'): 1.0, 
-    ('Ballmer', 'per:employee_or_member_of', 'Microsoft'): 0.6911532514802464, 
-    ('Christos Papadimitriou', 'per:employee_or_member_of', 'Harvard'): 1.0, 
-    ('Allen', 'per:employee_or_member_of', 'Intel'): 0.6400002269572793, 
-    ('Gates', 'per:employee_or_member_of', 'Intel'): 0.7639629571437762, 
-    ('Jack Sams', 'per:employee_or_member_of', 'IBM'): 1.0, 
-    ('Tim Paterson', 'per:employee_or_member_of', 'Seattle Computer Products'): 1.0, 
-    ('Post-Microsoft Gates', 'per:employee_or_member_of', 'Microsoft'): 0.7175707843712362, 
-    ('Satya Nad', 'per:employee_or_member_of', 'Microsoft'): 0.6728623638353038, 
-    ('he', 'per:employee_or_member_of', 'Cascade Investment LLC'): 0.6196949364043983, 
-    ('Gates', 'per:employee_or_member_of', 'Corbis'): 0.6027934517059498
-}
 
-
-### HI GARY
+###### HI SAMANTHA
 """
 
-THINGS WE STILL NEED:
-
-- last 2 annotations (wasn't sure where to put them) which are below:
-
-print("\tExtracted kbp annotations for 17 out of total 39 sentences") <- swap with real variables
+    I have put the first print statement in the code and fixed some statement.
+    I have tested and run the whole script. It went will. Unforturnately I could not test how step 6 
+goes with current example since the result always satisfy K, I will try to come up with some better 
+test tomorrow.
+    Below is the print statement I could not figure out either, my suggestion is that we ignore this
+since TA said we don't have to copy exactly what the transcript does.
 print("\bRelations extracted from this website: 5 (Overall: 5)") <- swap with real variables
 
 """
@@ -77,6 +46,7 @@ def main(APIkey, engineID, r, t, Q, k):
 
 
     X = defaultdict(float) #key is tuple, value is confidence value, this will help with duplicates and update
+    sorted_X = []
     prev_query_words = set()
     iter_count = 0
 
@@ -88,8 +58,8 @@ def main(APIkey, engineID, r, t, Q, k):
         ### remove the below comment and disregard fake X (for testing only)
         #X = step3(APIkey, engineID, r, t, Q, k)
         print("=========== Iteration:",iter_count,"- Query:",Q,"===========")
-        X = fakeX
-
+        #X = fakeX
+        X = step3(APIkey, engineID, r, t, Q, k)
         # sort X in decreasing intervals of extraction confidence
         # sorted_X is a list not dict
         sorted_X = sorted(X.items(), key=lambda item: item[1], reverse=True)
@@ -135,7 +105,7 @@ def step3(APIkey, engineID, r, t, Q, k):
     # now begin searching query
     relationdict = {'1':"per:schools_attended",'2':"per:employee_or_member_of",'3':"per:cities_of_residence",'4':"org:top_members_employees"}
     service = build("customsearch", "v1", developerKey=APIkey)
-    res = service.cse().list(q=Q, cx=engineID, num=5).execute()
+    res = service.cse().list(q=Q, cx=engineID, num=10).execute()
     X = process_urls(res,relationdict,r,t)
     return(X)
 
@@ -175,54 +145,54 @@ def process_urls(res,relationdict,r,t):
                            endpoint="http://localhost:9000") as pipeline_ner:
             with CoreNLPClient(annotators=['tokenize', 'ssplit', 'pos', 'lemma', 'ner', 'depparse', 'coref', 'kbp'],
                                timeout=30000, memory='4G', endpoint="http://localhost:9001") as pipeline_kbp:
-                for j in range(10): # this number can be changed back to 10 if needed
-                    try:
-                        #print(f">>> Repeating {j}th time.")
-                        ann_ner = pipeline_ner.annotate(strip_content)
-                        #print("getting to annotate")
+            # for j in range(10): # this number can be changed back to 10 if needed
+            #     try:
+                    #print(f">>> Repeating {j}th time.")
+                ann_ner = pipeline_ner.annotate(strip_content)
+                countkbp = 0
+                print("\tExtracted", len(ann_ner.sentence), "sentences. Processing each sentence one by one to check for presence of right pair of named entity types; if so, will run the second pipeline ...")
+                for sentence in ann_ner.sentence:
+                    #print("matching ners...")
+                    match = [False] * len(name_dict[r])
+                    for token in sentence.token:
+                        for i in range(len(name_dict[r])):
+                            if token.ner == name_dict[r][i]:
+                                match[i] = True
+                    if all(match):
+                        countkbp += 1
+                        try:
+                            ann = pipeline_kbp.annotate(to_text(sentence))
+                        except:
+                            continue
+                        countsentences = 0
+                        for i in ann.sentence:
+                            if (countsentences % 5 == 0) and (countsentences != 0):
+                                print("\tProcessed", countsentences+1,"/", len(ann_ner.sentence),"sentences")
+                            elif (countsentences == len(ann.sentence)):
+                                print("\tProcessed", len(ann_ner.sentence),"/", len(ann_ner.sentence),"sentences")
+                            for kbp_triple in i.kbpTriple:
+                                if kbp_triple.relation == relationdict[r]:
 
-                        print("\tExtracted", len(ann_ner.sentence), "sentences. Processing each sentence one by one to check for presence of right pair of named entity types; if so, will run the second pipeline ...")
-                        for sentence in ann_ner.sentence:
-                            #print("matching ners...")
-                            match = [False] * len(name_dict[r])
-                            for token in sentence.token:
-                                for i in range(len(name_dict[r])):
-                                    if token.ner == name_dict[r][i]:
-                                        match[i] = True
-                            if all(match):
-<<<<<<< HEAD
-                                print("match success, begin kbp")
-
-=======
-                                #print("match success, begin kbp")
->>>>>>> 3ec98e4574e064ce0f352813ae0a3e850534f9d9
-                                ann = pipeline_kbp.annotate(to_text(sentence))
-                                countsentences = 0
-                                for i in ann.sentence:
-                                    if (countsentences % 5 == 0) and (countsentences != 0):
-                                        print("\tProcessed", countsentences+1,"/", len(ann_ner.sentence),"sentences")
-                                    elif (countsentences == len(ann.sentence)):
-                                        print("\tProcessed", len(ann_ner.sentence),"/", len(ann_ner.sentence),"sentences")
-                                    for kbp_triple in i.kbpTriple:
-                                        if kbp_triple.relation == relationdict[r]:
-                                            #print("relation match")
-                                            print("\t\t=== Extracted Relation ===")
-                                            print("\t\tSentence:", i) ########## not sure if this is right, please check
-                                            print("\t\tConfidence:", kbp_triple.confidence,"; Subject:", kbp_triple.subject, "; Object:", kbp_triple.object, ";")
-                                            if kbp_triple.confidence > float(t):
-                                                if X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] < kbp_triple.confidence:
-                                                    #update key value now
-                                                    X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] = kbp_triple.confidence
-                                                    print("\t\tAdding to set of extracted relations")
-                                                    #print((kbp_triple.subject,kbp_triple.relation,kbp_triple.object,kbp_triple.confidence))
-                                            else:
-                                                print("\t\tConfidence is lower than threshold confidence. Ignoring this.")
-                                            print("\t\t==========")
-                                    countsentences += 1
-                        break
-                    except:
-                        continue
-                print(X.items()) #test
+                                    print("\t\t=== Extracted Relation ===")
+                                    print("\t\tSentence:", to_text(i)) ########## not sure if this is right, please check
+                                    print("\t\tConfidence:", kbp_triple.confidence,"; Subject:", kbp_triple.subject, "; Object:", kbp_triple.object, ";")
+                                    if kbp_triple.confidence > float(t):
+                                        if X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] < kbp_triple.confidence:
+                                            #update key value now
+                                            X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] = kbp_triple.confidence
+                                            print("\t\tAdding to set of extracted relations")
+                                            #print((kbp_triple.subject,kbp_triple.relation,kbp_triple.object,kbp_triple.confidence))
+                                        else:
+                                            print("\t\tDuplicate with lower confidence than existing record. Ignoring this.")
+                                    else:
+                                        print("\t\tConfidence is lower than threshold confidence. Ignoring this.")
+                                    print("\t\t==========")
+                            countsentences += 1
+                print("\tExtracted kbp annotations for ",countkbp," out of total ",len(ann_ner.sentence)," sentences")
+                    # break
+                    # except:
+                    #     continue
+                #print(X.items()) #test
     return X
 
 
