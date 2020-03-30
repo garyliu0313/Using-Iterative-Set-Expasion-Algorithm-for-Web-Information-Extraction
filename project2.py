@@ -13,19 +13,6 @@ from tika import parser
 from decimal import *
 
 
-###### HI SAMANTHA
-"""
-
-    I have put the first print statement in the code and fixed some statement.
-    I have tested and run the whole script. It went will. Unforturnately I could not test how step 6 
-goes with current example since the result always satisfy K, I will try to come up with some better 
-test tomorrow.
-    Below is the print statement I could not figure out either, my suggestion is that we ignore this
-since TA said we don't have to copy exactly what the transcript does.
-print("\bRelations extracted from this website: 5 (Overall: 5)") <- swap with real variables
-
-"""
-
 
 def main(APIkey, engineID, r, t, Q, k):
 
@@ -56,9 +43,8 @@ def main(APIkey, engineID, r, t, Q, k):
             prev_query_words.add(word.lower())
 
         ### remove the below comment and disregard fake X (for testing only)
-        #X = step3(APIkey, engineID, r, t, Q, k)
         print("=========== Iteration:",iter_count,"- Query:",Q,"===========")
-        #X = fakeX
+
         X = step3(APIkey, engineID, r, t, Q, k)
         # sort X in decreasing intervals of extraction confidence
         # sorted_X is a list not dict
@@ -188,10 +174,7 @@ def process_urls(res,relationdict,r,t):
                                     print("\t\t==========")
                             countsentences += 1
                 print("\tExtracted kbp annotations for ",countkbp," out of total ",len(ann_ner.sentence)," sentences")
-                    # break
-                    # except:
-                    #     continue
-                #print(X.items()) #test
+
     return X
 
 

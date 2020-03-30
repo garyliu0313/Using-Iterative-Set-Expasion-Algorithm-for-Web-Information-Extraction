@@ -7,6 +7,7 @@
 === List of all files submitting ===
 project2.py
 README.md
+transcript.txt
 
 === Description of how to run program ===
 # To get package that we are using, run following commands:
@@ -59,8 +60,12 @@ In step3(), the Google Custom Search Engine is run, and the results are
 passed to process_urls().
 
 *** STEP 3 ***
-For each URL in the response object res[], steps 3(a) to 3(e) are performed
-in the loop that defines the rest of the process_urls() method.
+For each URL in the response object res[], we extracted the content using tika
+and feed them to the ner annotator first. Then we maintain a matching list to
+determine whether a sentence contains all the ner tag we need for extracting
+the relation. Then we use kbp annotator to annotate the matched sentences and
+added the tuples that satisfy given confidence level and relation to the
+dictionary X.
 
 *** STEP 4 ***
 Step 4 is performed within the process_urls() loop, where kbp_triple.confidence,
