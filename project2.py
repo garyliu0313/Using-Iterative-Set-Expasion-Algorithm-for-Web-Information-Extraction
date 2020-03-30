@@ -46,8 +46,16 @@ fakeX = {
 
 def main(APIkey, engineID, r, t, Q, k):
     X = defaultdict(float) #key is tuple, value is confidence value, this will help with duplicates and update
+    prev_query_words = set()
 
     while len(X) < int(k):
+        print("QUERY IS ", str(Q))
+
+        #update the list of past query words
+        for word in Q.split(" "):
+            prev_query_words.add(word.lower())
+
+        ### remove the below comment and disregard fake X (for testing only)
         #X = step3(APIkey, engineID, r, t, Q, k)
         X = fakeX
         print("\nFAKE X: " + str(X)+ "\n")
@@ -61,17 +69,25 @@ def main(APIkey, engineID, r, t, Q, k):
         y = tuple()
         for tup, val in sorted_X:
             y = tup
-            old_query = str(Q).split(" ")
-            if " ".join(str(y)) not in old_query:
-                break
-            else:
+            sub = tup[0]
+            obj = tup[2]
+
+            # is subject in query? if so, skip
+            if sub.lower() in prev_query_words:
                 continue
-        # now y tuple is set
+            # is object in the query? if so, skip
+            elif obj.lower() in prev_query_words:
+                continue
+            # if neither are in query, then choose this y
+            else:
+                break
+        # now y tuple is set, in case we make another query search
 
         # if no possible y then just stop
         if len(y) == 0:
             break
-        new_query = str(Q) + " ".join(y)
+        new_query = str(Q) + " " + y[0] + " " + y[2]
+        print("NEW QUERY: ", new_query)
         Q = new_query
 
     # The above loop ends when X contains at least k tuples
