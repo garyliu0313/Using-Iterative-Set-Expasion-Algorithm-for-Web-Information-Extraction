@@ -54,30 +54,35 @@ def process_urls(res,relationdict,r,t):
                            endpoint="http://localhost:9000") as pipeline_ner:
             with CoreNLPClient(annotators=['tokenize', 'ssplit', 'pos', 'lemma', 'ner', 'depparse', 'coref', 'kbp'],
                                timeout=30000, memory='4G', endpoint="http://localhost:9001") as pipeline_kbp:
-                for j in range(3): # this number can be changed back to 10 if needed
-                    print(f">>> Repeating {j}th time.")
-                    ann_ner = pipeline_ner.annotate(strip_content)
-                    print("getting to annotate")
-                    for sentence in ann_ner.sentence:
-                        print("matching ners...")
-                        match = [False] * len(name_dict[r])
-                        for token in sentence.token:
-                            for i in range(len(name_dict[r])):
-                                if token.ner == name_dict[r][i]:
-                                    match[i] = True
-                        if all(match):
-                            print("match success, begin kbp")
-                            ann = pipeline_kbp.annotate(to_text(sentence))
-                            for i in ann.sentence:
-                                for kbp_triple in i.kbpTriple:
-                                    if kbp_triple.relation == relationdict[r]:
-                                        print("relation match")
-                                        if kbp_triple.confidence > float(t):
-                                            if X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] < kbp_triple.confidence:
-                                                #update key value now
-                                                X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] = kbp_triple.confidence
-                                                print("inserted:")
-                                                print((kbp_triple.subject,kbp_triple.relation,kbp_triple.object,kbp_triple.confidence))
+                for j in range(10): # this number can be changed back to 10 if needed
+                    try:
+                        print(f">>> Repeating {j}th time.")
+                        ann_ner = pipeline_ner.annotate(strip_content)
+                        print("getting to annotate")
+                        for sentence in ann_ner.sentence:
+                            print("matching ners...")
+                            match = [False] * len(name_dict[r])
+                            for token in sentence.token:
+                                for i in range(len(name_dict[r])):
+                                    if token.ner == name_dict[r][i]:
+                                        match[i] = True
+                            if all(match):
+                                print("match success, begin kbp")
+                                print(to_text(sentence))
+                                ann = pipeline_kbp.annotate(to_text(sentence))
+                                for i in ann.sentence:
+                                    for kbp_triple in i.kbpTriple:
+                                        if kbp_triple.relation == relationdict[r]:
+                                            print("relation match")
+                                            if kbp_triple.confidence > float(t):
+                                                if X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] < kbp_triple.confidence:
+                                                    #update key value now
+                                                    X[(kbp_triple.subject,kbp_triple.relation,kbp_triple.object)] = kbp_triple.confidence
+                                                    print("inserted:")
+                                                    print((kbp_triple.subject,kbp_triple.relation,kbp_triple.object,kbp_triple.confidence))
+                        break
+                    except:
+                        continue
                 print(X.items()) #test
     return X
 if __name__ == '__main__':
