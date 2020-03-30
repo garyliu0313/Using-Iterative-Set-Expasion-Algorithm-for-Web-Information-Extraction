@@ -11,23 +11,58 @@ from stanfordnlp.server import to_text
 import tika
 from tika import parser
 
+fakeX = {
+    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Cascade Investment Technology'): 0.9484856396848951, 
+    ('Melinda French', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.8882812681198851, 
+    ('William Henry Gates III', 'per:employee_or_member_of', 'Branded Entertainment Network'): 0.910425809655642, 
+    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Microsoft'): 0.9535132816229053, 
+    ('William Henry Gates III', 'per:employee_or_member_of', 'Microsoft'): 0.9605363777239155, 
+    ('Bill Gates Gates', 'per:employee_or_memberof', 'Cascade Investment Technology'): 0.7307587220750844, 
+    ('Melinda French', 'per:employeeor_member_of', 'Branded Entertainment Network'): 0.8205988757633852, 
+    ('Bill Gates Gates', 'per:employee_or_member_of', 'Branded Entertainment Network'): 0.8528370731813597, 
+    ('William Henry Gates III', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.964341523275631, 
+    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.9596297625973506, 
+    ('Melinda French', 'per:employee_or_member_of', 'Cascade Investment Technology'): 0.9331336130042003, 
+    ('Bill Gates Gates', 'per:employee_or_member_of', 'Microsoft'): 0.9789945486751996, 
+    ('Bill Gates Gates', 'per:employee_or_member_of', 'Bill & Melinda Gates Foundation'): 0.9592873304873829, 
+    ('Melinda French', 'per:employee_or_member_of', 'Microsoft'): 0.9561346424552023, 
+    ('Mary Maxwell Gates', 'per:employee_or_member_of', 'Branded Entertainment Network'): 0.8958521246315242, 
+    ('Paul Allen', 'per:employee_or_member_of', 'Microsoft'): 0.7123580527943317, 
+    ('Gates', 'per:employee_or_member_of', 'Microsoft'): 1.0, 
+    ('He', 'per:employee_or_member_of', 'Microsoft'): 1.0, 
+    ('Gates', 'per:employee_or_member_of', 'Harvard'): 1.0, 
+    ('Ballmer', 'per:employee_or_member_of', 'Microsoft'): 0.6911532514802464, 
+    ('Christos Papadimitriou', 'per:employee_or_member_of', 'Harvard'): 1.0, 
+    ('Allen', 'per:employee_or_member_of', 'Intel'): 0.6400002269572793, 
+    ('Gates', 'per:employee_or_member_of', 'Intel'): 0.7639629571437762, 
+    ('Jack Sams', 'per:employee_or_member_of', 'IBM'): 1.0, 
+    ('Tim Paterson', 'per:employee_or_member_of', 'Seattle Computer Products'): 1.0, 
+    ('Post-Microsoft Gates', 'per:employee_or_member_of', 'Microsoft'): 0.7175707843712362, 
+    ('Satya Nad', 'per:employee_or_member_of', 'Microsoft'): 0.6728623638353038, 
+    ('he', 'per:employee_or_member_of', 'Cascade Investment LLC'): 0.6196949364043983, 
+    ('Gates', 'per:employee_or_member_of', 'Corbis'): 0.6027934517059498
+}
+
 
 def main(APIkey, engineID, r, t, Q, k):
     X = defaultdict(float) #key is tuple, value is confidence value, this will help with duplicates and update
 
     while len(X) < int(k):
-        X = step3(APIkey, engineID, r, t, Q, k)
+        #X = step3(APIkey, engineID, r, t, Q, k)
+        X = fakeX
+        print("\nFAKE X: " + str(X)+ "\n")
 
         # sort X in decreasing intervals of extraction confidence
         # sorted_X is a list not dict
         sorted_X = sorted(X.items(), key=lambda item: item[1], reverse=True)
+        print("\nSORTED X: " + str(sorted_X) + "\n")
 
         # step 6: select new tuple to add to query, based on top extraction confidence level
         y = tuple()
-        for key, tup in sorted_X:
+        for tup, val in sorted_X:
             y = tup
-            old_query = string.split(str(Q))
-            if item not in old_query:
+            old_query = str(Q).split(" ")
+            if " ".join(str(y)) not in old_query:
                 break
             else:
                 continue
