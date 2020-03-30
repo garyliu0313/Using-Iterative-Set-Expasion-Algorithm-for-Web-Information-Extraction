@@ -63,7 +63,11 @@ def main(APIkey, engineID, r, t, Q, k):
         # sort X in decreasing intervals of extraction confidence
         # sorted_X is a list not dict
         sorted_X = sorted(X.items(), key=lambda item: item[1], reverse=True)
-
+        # step 5: return the tuples with their extraction confidence
+        print("================== ALL RELATIONS (", len(X), ") =================")
+        getcontext().prec = 6
+        for key, value in sorted_X:
+            print("Confidence:", Decimal(str(value)), "\t\t| Subject:", key[0], "\t\t| Object:", key[2])
         # step 6: select new tuple to add to query, based on top extraction confidence level
         y = tuple()
         for tup, val in sorted_X:
@@ -85,19 +89,13 @@ def main(APIkey, engineID, r, t, Q, k):
         # if no possible y then just stop
         if len(y) == 0:
             break
-        new_query = str(Q) + " " + y[0] + " " + y[2]
+        new_query = y[0] + " " + y[2]
         Q = new_query
         iter_count += 1
 
     # The above loop ends when X contains at least k tuples
 
-    if len(X) >= int(k):
-        # step 5: return the tuples with their extraction confidence
-        print("================== ALL RELATIONS (",len(X),") =================")
-        getcontext().prec = 6
-        for key, value in sorted_X:
-            print("Confidence:",Decimal(str(value)),"\t\t| Subject:", key[0],"\t\t| Object:",key[2])
-    else:
+    if len(X) < int(k):
         print("No results found.")
     
 
@@ -110,7 +108,7 @@ def step3(APIkey, engineID, r, t, Q, k):
     return(X)
 
 def process_urls(res,relationdict,r,t):
-    name_dict = {'1':["ORGANIZATION","PERSON"],'2':["ORGANIZATION","PERSON"],'3':["LOCATION","CITY","STATE_OR_PROVINCE","COUNTRY"],'4':["ORGANIZATION","PERSON"]}
+    name_dict = {'1':["ORGANIZATION","PERSON"],'2':["ORGANIZATION","PERSON"],'3':["PERSON","CITY"],'4':["ORGANIZATION","PERSON"]}
     X = defaultdict(float)
     count = 1
     with CoreNLPClient(annotators=['tokenize', 'ssplit', 'pos', 'lemma', 'ner'], timeout=30000, memory='4G',
@@ -134,6 +132,7 @@ def process_urls(res,relationdict,r,t):
                 try:
                     parsed = parser.from_file(url)
                 except:
+                    print("Unable to fetch URL. Continuing.")
                     continue
                 content = parsed["content"]
                 strip_content = ' '.join(content.split())
